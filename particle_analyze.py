@@ -92,5 +92,11 @@ for xyz_file in files:
     nat1_in = np.sum(~mask_out_atm1)
     nat2_in = np.sum(~mask_out_atm2)
     
-    with open(os.path.join(path_processed, "data.dat"), "a") as f:
-        print(i_sim, n_atoms, nat1, nat2, n_steps, initial_temperature, np.sum(epot), surface_area, solid_volume, cna_others, cna_fcc, cna_hcp, cna_bcc, cna_ico, bond_angle_others, bond_angle_fcc, bond_angle_hcp, bond_angle_bcc, bond_angle_ico, d_com, gyration_radius, nat1_out, nat2_out, nat1_in, nat2_in, r_cm[0], r_cm[1], r_cm[2], r_cm1[0], r_cm1[1], r_cm1[2], r_cm2[0], r_cm2[1], r_cm2[2], csp, sep="\t", file=f)
+    data_file = os.path.join(path_processed, "data.dat")
+    if not os.path.exists(data_file):
+        with open(data_file, "w") as f:
+            print("i_sim", "n_atoms", "nat1", "nat2", "n_steps", "initial_temperature", "epot", "surface_area", "solid_volume", "cna_others", "cna_fcc", "cna_hcp", "cna_bcc", "cna_ico", "bond_angle_others", "bond_angle_fcc", "bond_angle_hcp", "bond_angle_bcc", "bond_angle_ico", "d_com", "gyration_radius", "nat1_out", "nat2_out", "nat1_in", "nat2_in", "r_cm_x", "r_cm_y", "r_cm_z", "r_cm1_x", "r_cm1_y", "r_cm1_z", "r_cm2_x","r_cm2_y","r_cm2_z","csp" , sep="\t", file=f)
+            print(i_sim, n_atoms, nat1, nat2, n_steps, initial_temperature, np.sum(epot), surface_area, solid_volume, cna_others, cna_fcc, cna_hcp, cna_bcc, cna_ico, bond_angle_others, bond_angle_fcc, bond_angle_hcp, bond_angle_bcc, bond_angle_ico, d_com, gyration_radius, nat1_out, nat2_out, nat1_in, nat2_in, r_cm[0], r_cm[1], r_cm[2], r_cm1[0], r_cm1[1], r_cm1[2], r_cm2[0], r_cm2[1], r_cm2[2], csp, sep="\t", file=f)
+    else:
+        with open(data_file, "a") as f:
+            print(i_sim, n_atoms, nat1, nat2, n_steps, initial_temperature, np.sum(epot), surface_area, solid_volume, cna_others, cna_fcc, cna_hcp, cna_bcc, cna_ico, bond_angle_others, bond_angle_fcc, bond_angle_hcp, bond_angle_bcc, bond_angle_ico, d_com, gyration_radius, nat1_out, nat2_out, nat1_in, nat2_in, r_cm[0], r_cm[1], r_cm[2], r_cm1[0], r_cm1[1], r_cm1[2], r_cm2[0], r_cm2[1], r_cm2[2], csp, sep="\t", file=f)
