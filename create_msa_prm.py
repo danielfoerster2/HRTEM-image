@@ -1,0 +1,85 @@
+#!/usr/bin/python3
+
+import os
+import numpy as np
+import scipy.constants as cst
+
+
+electron_energy = float(os.getenv('electron_energy'))
+nx = int(os.getenv('nx'))
+ny = int(os.getenv('ny'))
+nz = int(os.getenv('nz'))
+file_sli = os.getenv('file_sli')
+file_cel = os.getenv('file_cel')
+file_msa_prm = os.getenv('file_msa_prm')
+
+with open(file_cel, 'r') as cel_file:
+    lines = cel_file.readlines()
+    line = lines[1].split()
+    a = float(line[1])
+    b = float(line[2])
+
+
+wavelength = cst.h / np.sqrt(2*cst.m_e*cst.e*electron_energy*1e3)*1e9 * 1 / np.sqrt(1 + cst.e*electron_energy*1e3/(2*cst.m_e*cst.c**2))
+with open(file_msa_prm, 'w') as prm_file:
+
+    print("'[Microscope Parameters]'", file=prm_file)
+    print(f"{25.0}                          (STEM probe forming aperture: radius (mrad), rel. asymmetry, asym. dir. (rad), rel. edge)", file=prm_file)
+    print(f"{80.0}                          (lower semi angle of image-space detector (mrad))", file=prm_file)
+    print(f"{220.0}                         (upper semi angle of image-space detector (mrad))", file=prm_file)
+    print(f"{0} 'detectors.prm'             (switch for using a detector definition file, and the name of the detector definition file, attention: the output file name will change when using more than one detector, the detector definitions in the preceeding two lines are ignored when using a detector definition file, all detector definitions are ignord in CTEM mode)", file=prm_file)
+    print(f"{wavelength}                    (electron wavelength (nm), <=1.0, alternatively, >1.0: electron energy (keV))", file=prm_file)
+    print(f"{0.01}                          (de-magnified source radius (nm) for applying partial spatial coherence to STEM images)", file=prm_file)
+    print(f"{3.0}                           (defocus spread (nm) (1/e half width) for STEM image simulation only)", file=prm_file)
+    print(f"{2.0}                           (defocus spread kernel width for explicit focal convolution, STEM only)", file=prm_file)
+    print(f"{7}                             (defocus spread kernel steps/size, STEM only)", file=prm_file)
+    print(f"{24}                            ([NOA] = number of aberration definitions following this line. Can be zero when no aberration definitions are given.)", file=prm_file)
+    print(f"{0} {0.0} {0.0}                 (aberration definition: (index) (aberration.x) (aberration.y) ! Here MUST follow NOA lines ! )", file=prm_file)
+    print(f"{1} {0.0} {0.0}                 ( ... another aberration definition ... )", file=prm_file)
+    print(f"{2} {0.0} {0.0}                 (ATTENTION: Unformatted reading expects the dot \".\" as decimal delimeter!)", file=prm_file)
+    print(f"{3} {0.0} {0.0}                 (           DO NOT USE COMMA \",\"!!! It bugs the reading. )", file=prm_file)
+    print(f"{4} {0.0} {0.0}                 (           The space char \" \" is used to separate the 3 values. )", file=prm_file)
+    print(f"{5} {0.0} {0.0}                 (aberration numbering starts from 0 up to max. aberration)", file=prm_file)
+    print(f"{6} {0.0} {0.0}                 (current implementation supports max. 24 aberrations (1st to 8th order))", file=prm_file)
+    print(f"{7} {0.0} {0.0}                 (beginning with 0=image shift C_(0,1), 1=defocus C_(1,0), 2=2-fold astigmatism C_(1,2), )", file=prm_file)
+    print(f"{8} {0.0} {0.0}                 (3=axial coma C_(2,1), 4=3-fold astigm. C_(2,3), )", file=prm_file)
+    print(f"{9} {0.0} {0.0}                 (5=CS C_(3,0), 6=star aberration C_(3,2), 7=4-fold astigm. C_(3,4), )", file=prm_file)
+    print(f"{10} {0.0} {0.0}                (8=5th order coma C_(4,1), 9=3-lobe aberration C_(4,3), 10=5-fold astigmatism C_(4,5), )", file=prm_file)
+    print(f"{11} {0.0} {0.0}                (11=spherical aberration of 6th order C_(5,0), )", file=prm_file)
+    print(f"{12} {0.0} {0.0}                (12=2-fold aberration of of 6th order C_(5,2), )", file=prm_file)
+    print(f"{13} {0.0} {0.0}                (13=rosette aberration C_(5,4), )", file=prm_file)
+    print(f"{14} {0.0} {0.0}                (14=6-fold astigmatism C_(5,6), )", file=prm_file)
+    print(f"{15} {0.0} {0.0}                (15=7th order coma C_(6,1), )", file=prm_file)
+    print(f"{16} {0.0} {0.0}                (16=3-fold aberration of 7th order C_(6,3), )", file=prm_file)
+    print(f"{17} {0.0} {0.0}                (17=5-fold aberration of 7th order C_(6,5), )", file=prm_file)
+    print(f"{18} {0.0} {0.0}                (18=7-fold astigmatism C_(6,7), )", file=prm_file)
+    print(f"{19} {0.0} {0.0}                (19=Spherical aberration of 8th order C_(7,0), )", file=prm_file)
+    print(f"{20} {0.0} {0.0}                (20=2-fold aberration of of 8th order C_(7,2), )", file=prm_file)
+    print(f"{21} {0.0} {0.0}                (21=4-fold aberration of of 8th order C_(7,4), )", file=prm_file)
+    print(f"{22} {0.0} {0.0}                (22=6-fold aberration of of 8th order C_(7,6), )", file=prm_file)
+    print(f"{23} {0.0} {0.0}                (23=8-fold astigmatism C_(7,8) )", file=prm_file)
+
+
+    print("'[Multislice Parameters]'", file=prm_file)
+    print(f"{0.0}                   (object tilt x [deg], approximative approach, keep values smaller than 5 degrees)", file=prm_file)
+    print(f"{0.0}                   (object tilt y [deg], approximative approach, keep values smaller than 5 degrees)", file=prm_file)
+    print(f"{0.0}                   (horizontal scan frame offset [nm])", file=prm_file)
+    print(f"{0.0}                   (vertical scan frame offset [nm])", file=prm_file)
+    print(f"{a}                     (horizontal scan frame size [nm])", file=prm_file)
+    print(f"{b}                     (vertical scan frame size [nm])", file=prm_file)
+    print(f"{0.0}                   (frame rotation w.r.t. slice x-axis [deg])", file=prm_file)
+    print(f"{nx}                    (number of scan columns = number of pixels on horizontal scan image axis)", file=prm_file)
+    print(f"{ny}                    (number of scan rows = number of pixels on vertical scan image axis)", file=prm_file)
+    print(f"{0}                     (Switch partial temporal coherence ON = 1 or OFF = 0. Simulation by explicit focal averaging, leadingto a drastic increase of calculation time!)", file=prm_file)
+    print(f"{0}                     (Switch partial spatial coherence calculation for an input STEM image. OFF = 0, Gaussian profile = 1, Cauchy profile = 2, Top-hat profile = 3.)", file=prm_file)
+    print(f"{1}                     (integer factor to internally repeat supercell data in horizontal direction, x)", file=prm_file)
+    print(f"{1}                     (integer factor to internally repeat supercell data in vertical direction, y)", file=prm_file)
+    print(f"{1}                     (integer factor to internally repeat supercell data in depth, z, historic obsolete parameter.)", file=prm_file)
+    print(f"'{file_sli}'            (slice file name string [SFN], slice files will be searched with names [SFN]+\"_###.sli\" where ### is a three digit number identifying the indiviual slices in numbered order from entrance slice 001 to exit slice [NOSD]. )", file=prm_file)
+    print(f"{nz}                    ([NOSD] = number of slice files in z-order, defines the index range (001 ... [NOSD]) of the slice-file names)", file=prm_file)
+    print(f"{1}                     [NFLV] = number of frozen lattice alternatives, if this value is larger than 1. Slice variants can be present either as multiple slice data contained by one file per slice (default), or in form of several individual slice files containing one variation. If the slice variants are present in individual files, the slice file naming is change to [SFN]+\"_###_###.sli\", where the first index identifies the slice variant number from 001 to [NFLV] and the second index identifies the slice number in z-order from 001 to [NOSD].)", file=prm_file)
+    print(f"{1}                     ([NCPP] = number of minimum frozen lattice variations for one scan pixel in STEM mode, and number of frozen lattice variations generating exit plane waves in CTEM mode, drastic increase of calculation time when >1, since multiple multi-slice calculations will be done per scan pixel. )", file=prm_file)
+    print(f"{0}                     (periodic detector readout positions, number of slices after which detectors are read out. A sequence of output files will be generated, adding the index \"_t###\" where ### is a 3 digit number specifying the slice number of the detection. Default value: 0 -> detectors are read out at the exit plane and just one output file is generated. )", file=prm_file)
+    print(f"{nz}                    ([NOS] = total number of slices in the object, minimum this number of slice IDs MUST FOLLOW BELOW! Only the next NOSD lines will be read, additional lines are ignored.)", file=prm_file)
+    for i in range(nz):
+        print(i, file=prm_file)
