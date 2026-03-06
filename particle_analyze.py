@@ -1,4 +1,4 @@
-from ovito.io import import_file, export_file
+from ovito.io import import_file
 from ovito.modifiers import *
 from ovito.data import *
 
