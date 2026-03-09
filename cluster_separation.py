@@ -7,7 +7,6 @@ import numpy as np
 
 
 path_xyz = os.getenv("path_xyz")
-path_processed = os.getenv("path_processed")
 path_new_xyz = os.getenv("path_new_xyz")
 
 files = os.listdir(path_xyz)
