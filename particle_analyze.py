@@ -7,15 +7,13 @@ import os
 import numpy as np
 
 path_xyz = os.getenv("path_xyz")
-path_processed = os.getenv("path_processed")
-path_new_xyz = os.getenv("path_new_xyz")
-id_sim = os.getenv("id_sim")
 
 md_data = np.genfromtxt(os.path.join(os.path.dirname(path_xyz), "d.dat"), dtype=None)
 first_column = np.array([row[0] for row in md_data])
-files = glob.glob(os.path.join(path_new_xyz, id_sim + "_*.xyz"))
 
-for xyz_file in files:
+f = open("data.dat", "w")
+
+for xyz_file in glob.glob("./xyz/*.xyz"):
 
     i_sim = os.path.basename(xyz_file).split(".")[0]
     mask = first_column == int(i_sim.split("_")[0])    
@@ -66,8 +64,6 @@ for xyz_file in files:
         r_cm2 = np.sum(pos_atm2, axis=0) / nat2
     else:
         r_cm2 = np.array([np.nan, np.nan, np.nan])
-    r_cm = np.sum(pos, axis=0) / n_atoms
-    pos = pos - box * np.round((pos - r_cm) / box)
 
     d_com = np.linalg.norm(r_cm1 - r_cm2)
 
@@ -81,12 +77,7 @@ for xyz_file in files:
     nat2_out = np.sum(mask_out_atm2)
     nat1_in = np.sum(~mask_out_atm1)
     nat2_in = np.sum(~mask_out_atm2)
-    
-    data_file = os.path.join(path_processed, "data.dat")
-    if not os.path.exists(data_file):
-        with open(data_file, "w") as f:
-            print("i_sim", "n_atoms", "nat1", "nat2", "n_steps", "initial_temperature", "epot", "surface_area", "solid_volume", "cna_others", "cna_fcc", "cna_hcp", "cna_bcc", "cna_ico", "bond_angle_others", "bond_angle_fcc", "bond_angle_hcp", "bond_angle_bcc", "bond_angle_ico", "d_com", "gyration_radius", "nat1_out", "nat2_out", "nat1_in", "nat2_in", "r_cm_x", "r_cm_y", "r_cm_z", "r_cm1_x", "r_cm1_y", "r_cm1_z", "r_cm2_x","r_cm2_y","r_cm2_z","csp" , sep="\t", file=f)
-            print(i_sim, n_atoms, nat1, nat2, n_steps, initial_temperature, np.sum(epot), surface_area, solid_volume, cna_others, cna_fcc, cna_hcp, cna_bcc, cna_ico, bond_angle_others, bond_angle_fcc, bond_angle_hcp, bond_angle_bcc, bond_angle_ico, d_com, gyration_radius, nat1_out, nat2_out, nat1_in, nat2_in, r_cm[0], r_cm[1], r_cm[2], r_cm1[0], r_cm1[1], r_cm1[2], r_cm2[0], r_cm2[1], r_cm2[2], csp, sep="\t", file=f)
-    else:
-        with open(data_file, "a") as f:
-            print(i_sim, n_atoms, nat1, nat2, n_steps, initial_temperature, np.sum(epot), surface_area, solid_volume, cna_others, cna_fcc, cna_hcp, cna_bcc, cna_ico, bond_angle_others, bond_angle_fcc, bond_angle_hcp, bond_angle_bcc, bond_angle_ico, d_com, gyration_radius, nat1_out, nat2_out, nat1_in, nat2_in, r_cm[0], r_cm[1], r_cm[2], r_cm1[0], r_cm1[1], r_cm1[2], r_cm2[0], r_cm2[1], r_cm2[2], csp, sep="\t", file=f)
+
+    print(i_sim, n_atoms, nat1, nat2, n_steps, initial_temperature, np.sum(epot), surface_area, solid_volume, cna_others, cna_fcc, cna_hcp, cna_bcc, cna_ico, bond_angle_others, bond_angle_fcc, bond_angle_hcp, bond_angle_bcc, bond_angle_ico, d_com, gyration_radius, nat1_out, nat2_out, nat1_in, nat2_in, csp, sep="\t", file=f)
+
+f.close()

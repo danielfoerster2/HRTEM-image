@@ -5,12 +5,8 @@ import numpy as np
 
 electron_energy = float(os.getenv('electron_energy'))
 nz = int(os.getenv('nz'))
-path_processus = os.getenv('path_processus')
 
-file_sli = os.path.join(path_processus, "slice")
-
-with open(os.path.join(path_processus, 'msa.prm'), 'w') as prm_file:
-
+with open('msa.prm', 'w') as prm_file:
     print("'[Microscope Parameters]'", file=prm_file)
     print(f"{25.0}                          (STEM probe forming aperture: radius (mrad), rel. asymmetry, asym. dir. (rad), rel. edge)", file=prm_file)
     print(f"{80.0}                          (lower semi angle of image-space detector (mrad))", file=prm_file)
@@ -38,7 +34,7 @@ with open(os.path.join(path_processus, 'msa.prm'), 'w') as prm_file:
     print(f"{1}                     (integer factor to internally repeat supercell data in horizontal direction, x)", file=prm_file)
     print(f"{1}                     (integer factor to internally repeat supercell data in vertical direction, y)", file=prm_file)
     print(f"{1}                     (integer factor to internally repeat supercell data in depth, z, historic obsolete parameter.)", file=prm_file)
-    print(f"'{file_sli}'            (slice file name string [SFN], slice files will be searched with names [SFN]+\"_###.sli\" where ### is a three digit number identifying the indiviual slices in numbered order from entrance slice 001 to exit slice [NOSD]. )", file=prm_file)
+    print(f"slice                   (slice file name string [SFN], slice files will be searched with names [SFN]+\"_###.sli\" where ### is a three digit number identifying the indiviual slices in numbered order from entrance slice 001 to exit slice [NOSD]. )", file=prm_file)
     print(f"{nz}                    ([NOSD] = number of slice files in z-order, defines the index range (001 ... [NOSD]) of the slice-file names)", file=prm_file)
     print(f"{1}                     [NFLV] = number of frozen lattice alternatives, if this value is larger than 1. Slice variants can be present either as multiple slice data contained by one file per slice (default), or in form of several individual slice files containing one variation. If the slice variants are present in individual files, the slice file naming is change to [SFN]+\"_###_###.sli\", where the first index identifies the slice variant number from 001 to [NFLV] and the second index identifies the slice number in z-order from 001 to [NOSD].)", file=prm_file)
     print(f"{1}                     ([NCPP] = number of minimum frozen lattice variations for one scan pixel in STEM mode, and number of frozen lattice variations generating exit plane waves in CTEM mode, drastic increase of calculation time when >1, since multiple multi-slice calculations will be done per scan pixel. )", file=prm_file)
