@@ -4,13 +4,16 @@ import glob
 import os
 import subprocess
 import sys
-import matplotlib.pyplot as plt
-import numpy as np
+
+import matplotlib.pyplot    as plt
+import numpy                as np
+
+
+""" Parameters initialization """
 
 process_id = os.getenv("process_id")
-
 box = 100.0   # EN ANGSTROM
-n_variants = 10
+n_variants = 10 # Number of variants for each structure (random rotation, interatomic distance variation, aberrations)
 dbf_ag = 0.019 # 0.008 XXX
 dbf_co = 0.015 # 0.004 XXX
 nx = 128
@@ -19,17 +22,20 @@ nz = int(os.getenv('nz'))
 electron_energy = float(os.getenv('electron_energy'))
 count_min = 100
 count_max = 500
-
-aberrations = np.array([[0.0, 0.0],    # image shift
-              [-4.0, -8.0],  # defocus
-              [0.0, 0.0],    # astigmatism
-              [0.0, 0.0],    # coma
-              [0.0, 0.0],    # three-lobe aberration
-              [0.001, 0.001],    # spherical aberration
-              [0.0, 0.0]])   # star aberration
+aberrations = np.array([[0.0, 0.0], # image shift
+              [-4.0, -8.0],         # defocus
+              [0.0, 0.0],           # astigmatism
+              [0.0, 0.0],           # coma
+              [0.0, 0.0],           # three-lobe aberration (Three-fold astigmatism ?)
+              [0.001, 0.001],       # spherical aberration
+              [0.0, 0.0]])          # star aberration
 
 md_data = np.genfromtxt(f"tmp_{process_id}/tmp.dat", dtype=str)
-first_column = np.array([row[0] for row in md_data])
+first_column = np.array([row[0] for row in md_data]) # Extract the first column (id_sim)
+
+
+
+""" Read the .xyz file and extract atomic positions and symbols """
 
 with open(sys.argv[1], 'r') as xyz_file:
     lines = xyz_file.readlines()
@@ -43,7 +49,11 @@ with open(sys.argv[1], 'r') as xyz_file:
         pos_ini[i_atom] = np.array([float(line[1]), float(line[2]), float(line[3])])
         symbols.append(line[0])
 
+
 for i_variant in range(n_variants):
+
+    """ Random rotation and interatomic distance variation """
+
     phi = np.random.uniform(0, 2*np.pi)
     theta = np.random.uniform(0, np.pi)
     rot_matrix = np.array([[np.cos(phi)*np.cos(theta), -np.sin(phi), np.cos(phi)*np.sin(theta)],
@@ -51,16 +61,17 @@ for i_variant in range(n_variants):
                            [-np.sin(theta), 0, np.cos(theta)]])
     pos = np.dot(pos_ini, rot_matrix) * np.random.uniform(0.95, 1.05)
 
-    gyration_radius = np.sqrt(np.sum(np.linalg.norm(pos, axis=1)**2) / n_atoms)
 
+
+    """ Computation of structural parameters """
+
+    gyration_radius = np.sqrt(np.sum(np.linalg.norm(pos, axis=1)**2) / n_atoms)
     radius_limit = .8*gyration_radius
 
     pos_atm1 = pos[np.array(symbols) == 'Ag']
     pos_atm2 = pos[np.array(symbols) == 'Co']
-
     mask_out_atm1 = np.linalg.norm(pos_atm1, axis=1) > radius_limit
     mask_out_atm2 = np.linalg.norm(pos_atm2, axis=1) > radius_limit
-    
     nat1 = pos_atm1.shape[0]
     nat2 = pos_atm2.shape[0]
 
@@ -82,6 +93,9 @@ for i_variant in range(n_variants):
     r_cm = np.sum(pos, axis=0) / n_atoms
 
 
+
+    """ Creation of the .cel file for celslc program """
+
     atom_types = set(symbols)
     with open(f"tmp_{process_id}/coord.cel", 'w') as cel_file:
         res = ""
@@ -101,9 +115,12 @@ for i_variant in range(n_variants):
             else:
                 exit(f"Error: unknown element {symbols[i_atom]}")
             print(symbols[i_atom], x, y, z, occupancy, debye_waller_factor, 0, 0, 0, file=cel_file)
-    
-    aberrations_values = np.zeros_like(aberrations)
 
+
+
+    """ Creation of the .prm file for wavimg program """
+
+    aberrations_values = np.zeros_like(aberrations)
     with open(f'tmp_{process_id}/wavimg.prm', "w") as f:
         print(f"'tmp_{process_id}/msa_sl0{nz}.wav'", file=f)      # line 1
         print(f"{nx} {ny}", file=f)
@@ -133,6 +150,10 @@ for i_variant in range(n_variants):
         print(f"{0.0} {0.0}", file=f)
         print(f"{0}", file=f)
     
+
+
+    """ DrProbe Simulation """
+
     subprocess.run(["celslc", "-cel", f"tmp_{process_id}/coord.cel", "-slc", f"tmp_{process_id}/slice", "-nx", str(nx), "-ny", str(ny), "-nz", str(nz), "-ht", str(electron_energy), "-dwf", "-abs"], stdout=subprocess.DEVNULL)
     subprocess.run(["rm", "-f", f"tmp_{process_id}/coord.cel"])
     subprocess.run(["msa", "-prm", f"tmp_{process_id}/msa.prm", "-out", f"tmp_{process_id}/msa.wav", "/ctem"], stdout=subprocess.DEVNULL)
@@ -141,17 +162,29 @@ for i_variant in range(n_variants):
     subprocess.run(["wavimg", "-prm", f"tmp_{process_id}/wavimg.prm", "-out", f"tmp_{process_id}/image.dat"], stdout=subprocess.DEVNULL)
     os.remove(f"tmp_{process_id}/msa_sl0{nz}.wav")
 
+
+
+    """ Add Poisson noise to the image """
+
     data = np.fromfile(f"tmp_{process_id}/image.dat", dtype=np.float32)
     subprocess.run(["rm", "-f", f"tmp_{process_id}/image.dat"])
     counts = np.random.uniform(count_min, count_max)
     data_normalized = (data - np.min(data)) / (np.max(data) - np.min(data))
     image = np.random.poisson(counts*data_normalized.reshape((nx, ny)))
 
+
+
+    """ Save the HRTEM image """
+
     plt.imshow(image, cmap='gray')
     plt.axis('off')
     id_sim = f"{os.path.basename(sys.argv[1]).split('.')[0]}_{i_variant}"
     plt.savefig(f"hrtem_images/{id_sim}.png", bbox_inches='tight', pad_inches=0)
     plt.close()
+
+
+
+    """ Save the simulation parameters """
 
     mask = first_column == os.path.basename(sys.argv[1]).split('.')[0]
     param = md_data[mask][0]
